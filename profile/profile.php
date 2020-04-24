@@ -1,7 +1,7 @@
 <?php
 
 
-$link = mysqli_connect("localhost", "root", "", "middb");
+include "../actions/db.php";
 $friends = [];
 
 $requests = [];
@@ -14,28 +14,27 @@ if (isset($url['query'])) {
 
 }
 if (isset($params['id'])&& $params['id']!=$_COOKIE['id'] ) {
-    $user = mysqli_query($link, "select * from users where id='" . $params['id'] . "'");
+    $user = oci_parse($link, "select * from users where id='" . $params['id'] . "'");
 
 } else {
-    $user = mysqli_query($link, "select * from users where hash='" . $_COOKIE['hash'] . "'");
+    $user = oci_parse($link, "select * from users where hash='" . $_COOKIE['hash'] . "'");
     $profile = 1;
 }
-$userdata = mysqli_fetch_assoc($user);
+oci_execute($user);
+$userdata = oci_fetch_assoc($user);
 
-$query = mysqli_query($link, "select * from friends where user='" . $userdata['id'] . "' limit 15");
-while ($row = mysqli_fetch_assoc($query)) {
-    $images = mysqli_query($link, "select id,image_path,first_name from users where id='" . $row['friend'] . "'");
-    array_push($friends, mysqli_fetch_assoc($images));
-}
-$query = mysqli_query($link, "select * from requests where user_to='" . $userdata['id'] . "'and  accepted=0 limit 5");
-while ($row = mysqli_fetch_assoc($query)) {
-    array_push($requests, $row);
-    $user = mysqli_query($link, "select id,image_path,first_name,last_name from users where id='" . $row['user'] . "'");
-    array_push($requests_users, mysqli_fetch_assoc($user));
+$query = oci_parse($link, "select * from friends_info where user_id='" . $userdata['ID'] . "' ");
+oci_execute($query);
+oci_fetch_all($query,$friends,null,null,OCI_FETCHSTATEMENT_BY_ROW);
 
-}
-$postsQuery = mysqli_query($link, "select * from profile_wall where user='" . $userdata['id'] . "' order by date");
-while ($row = mysqli_fetch_assoc($postsQuery)) {
+
+$query = oci_parse($link, "select * from requests where user_id='" . $userdata['ID'] . "'");
+oci_execute($query);
+oci_fetch_all($query,$requests_users,null,null,OCI_FETCHSTATEMENT_BY_ROW);
+
+$postsQuery = oci_parse($link, "select * from profile_wall where user_id='" . $userdata['ID'] . "' order by created_date");
+oci_execute($postsQuery);
+while ($row = oci_fetch_assoc($postsQuery)) {
     array_push($posts, $row);
 }
 
@@ -138,11 +137,11 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
         <div class="row">
             <div class="col-md-8">
                 <div class="profile">
-                    <h1 class="page-header"> <?php echo $userdata['first_name'] . " " . $userdata['last_name'] ?></h1>
+                    <h1 class="page-header"> <?php echo $userdata['FIRST_NAME'] . " " . $userdata['LAST_NAME'] ?></h1>
                     <div class="row">
                         <div class="col-md-4">
                             <img <?php
-                            echo "src=" . $userdata['image_path'];
+                            echo "src=" . $userdata['IMAGE'];
                             ?> class="img-thumbnail" alt="">
 
 
@@ -150,12 +149,12 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                         <div class="col-md-8">
                             <ul>
                                 <li>
-                                    <strong>Name:</strong> <?php echo $userdata['first_name'] . " " . $userdata['last_name'] ?>
+                                    <strong>Name:</strong> <?php echo $userdata['FIRST_NAME'] . " " . $userdata['LAST_NAME'] ?>
                                 </li>
-                                <li><strong>Phone:</strong> <?php echo $userdata['phone_number'] ?></li>
-                                <li><strong>Gender:</strong> <?php echo $userdata['gender'] ?></li>
-                                <li><strong>DOB:</strong> <?php echo $userdata['date_birth'] ?></li>
-                                <li><strong>City:</strong> <?php echo $userdata['city'] ?></li>
+                                <li><strong>Phone:</strong> <?php echo $userdata['PHONE_NUMBER'] ?></li>
+                                <li><strong>Gender:</strong> <?php echo $userdata['GENDER'] ?></li>
+                                <li><strong>DOB:</strong> <?php echo $userdata['DATE_BIRTH'] ?></li>
+                                <li><strong>City:</strong> <?php echo $userdata['CITY'] ?></li>
 
                             </ul>
                         </div>
@@ -187,19 +186,19 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                                     <?php
                                     if (sizeof($posts) > 0) {
                                         echo "<div class=\"col-sm-2\">
-                                        <a href='profile.php?id=" . $userdata['id'] . "' class=\"post-avatar thumbnail\"><img 
-                                            src= " . $userdata['image_path'] . " alt=\"\"><div class=\"text-center\">" . $userdata['first_name'] . "</div></a></div>";
+                                        <a href='profile.php?id=" . $userdata['ID'] . "' class=\"post-avatar thumbnail\"><img 
+                                            src= " . $userdata['IMAGE'] . " alt=\"\"><div class=\"text-center\">" . $userdata['FIRST_NAME'] . "</div></a></div>";
                                     }
                                     ?>
 
                                     <div class="col-sm-10">
                                         <?php
                                         for ($i = 0; $i < sizeof($posts); $i++) {
-                                            echo "<div class=\"likes text-end\">" . $posts[$i]['date'] . "</div>";
+                                            echo "<div class=\"likes text-end\">" . $posts[$i]['CREATE_DATE'] . "</div>";
 
                                             echo "<div class=\"bubble w-100\">";
                                             echo "<div class=\"pointer w-100\">";
-                                            echo "<p>" . $posts[$i]['text'] . "</p>";
+                                            echo "<p>" . $posts[$i]['TEXT'] . "</p>";
                                             echo "</div>";
                                             echo "</div>";
                                             echo "<div class=\"clearfix\"></div>";
@@ -238,8 +237,8 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                             }
                             for ($i = 0; $i < sizeof($friends); $i++) {
                                 echo "<li>
-                                        <a href='profile.php?id=" . $friends[$i]['id'] . "' class=\"post-avatar thumbnail\"><img 
-                                            src= " . $friends[$i]['image_path'] . " alt=\"\"><div class=\"text-center\">" . $friends[$i]['first_name'] . "</div></a></li>";
+                                        <a href='profile.php?id=" . $friends[$i]['ID'] . "' class=\"post-avatar thumbnail\"><img 
+                                            src= " . $friends[$i]['IMAGE'] . " alt=\"\"><div class=\"text-center\">" . $friends[$i]['FIRST_NAME'] . "</div></a></li>";
                             }
                             ?>
                         </ul>
@@ -260,10 +259,10 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                             if (sizeof($requests_users)>0){
                             foreach ($requests_users as $user ){
                                 echo "<div class=\"group-item\">
-                            <img src='".$user['image_path']."' alt=\"\">
-                            <h4><a href='profile.php?id=".$user['id']."' class=\"\">".$user['first_name']." ".$user['last_name']."</a></h4>
-                            <form ><button onclick=\"addFriend(".$user['id'].")\" class='btn btn-success btn-sm'>Accept</button>
-                            <button onclick=\"declineFriend(".$user['id'].")\" class='btn btn-danger btn-sm'>Decline</button></form>
+                            <img src='".$user['IMAGE']."' alt=\"\">
+                            <h4><a href='profile.php?id=".$user['ID']."' class=\"\">".$user['FIRST_NAME']." ".$user['LAST_NAME']."</a></h4>
+                            <form ><button onclick=\"addFriend(".$user['ID'].")\" class='btn btn-success btn-sm'>Accept</button>
+                            <button onclick=\"declineFriend(".$user['ID'].")\" class='btn btn-danger btn-sm'>Decline</button></form>
 
                         </div>
                         <div class=\"clearfix\"></div>";
