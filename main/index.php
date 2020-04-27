@@ -53,7 +53,7 @@ while ($row = mysqli_fetch_assoc($query)) {
 
 <header>
     <div class="container">
-        <img src="../img/logo.png" class="logo" alt="">
+        <img src="../img/logo.jpg" class="logo" alt="">
     </div>
 </header>
 
@@ -72,7 +72,7 @@ while ($row = mysqli_fetch_assoc($query)) {
             <ul class="nav navbar-nav">
                 <li class="active"><a href="index.php">Home</a></li>
                 <li><a href="../members/members.php">Members</a></li>
-                <li><a href="../photos/photos.html">Photos</a></li>
+                <!-- <li><a href="../photos/photos.html">Photos</a></li> -->
                 <li><a href="../profile/profile.php">Profile</a></li>
                 <li><a style="color:orangered;" href="../login/logout.php">Log out</a></li>
 
@@ -143,64 +143,17 @@ while ($row = mysqli_fetch_assoc($query)) {
 
                     }
                     ?>
+
+
             </div>
-            <div class="col-md-4">
-                <div class="panel panel-default friends">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">My Friends</h3>
-                    </div>
-                    <div class="panel-body">
-                        <ul>
-                            <?php
-                            if (isset($profile)) {
-                                if (sizeof($friends) == 0) {
-                                    echo "<h4>Friends list is empty. You can add new <a  href='../members/members.php'>friends</a></h4>";
-                                }
-                            } else {
-                                if (sizeof($friends) == 0) {
-                                    echo "<h4>Friends list is empty.</h4>";
-                                }
-                            }
-                            for ($i = 0; $i < sizeof($friends); $i++) {
-                                echo "<li>
-                                        <a href='profile.php?id=" . $friends[$i]['id'] . "' class=\"post-avatar thumbnail\"><img
-                                            src= " . $friends[$i]['image_path'] . " alt=\"\"><div class=\"text-center\">" . $friends[$i]['first_name'] . "</div></a></li>";
-                            }
-                            ?>
-                        </ul>
-                        <div class="clearfix"></div>
-
-                    </div>
-                </div>
+            <div class="col-md-4">  
                 <?php
-                if (isset($profile)) {
-                    echo "<div class=\"panel panel-default groups\">
-                    <div class=\"panel-heading\">
-                        <h3 class=\"panel-title\">Latest Requests</h3>
-                    </div>
-                    <div class=\"panel-body\">";
+                    include '../components/friends.php';
+                ?> 
 
-                    if (sizeof($requests_users) > 0) {
-                        foreach ($requests_users as $user) {
-                            echo "<div class=\"group-item\">
-                            <img src='" . $user['image_path'] . "' alt=\"\">
-                            <h4><a href='profile.php?id=" . $user['id'] . "' class=\"\">" . $user['first_name'] . " " . $user['last_name'] . "</a></h4>
-                            <form ><button onclick=\"addFriend(" . $user['id'] . ")\" class='btn btn-success btn-sm'>Accept</button>
-                            <button onclick=\"declineFriend(" . $user['id'] . ")\" class='btn btn-danger btn-sm'>Decline</button></form>
-
-                        </div>
-                        <div class=\"clearfix\"></div>";
-                        }
-                    } else {
-                        echo "<h4>Request list empty.</h4>";
-                    }
-
-                    echo "</div></div>";
-                }
-
-
-                ?>
-
+                <?php 
+                    include '../components/requests.php';
+                ?> 
             </div>
         </div>
     </div>
@@ -211,8 +164,7 @@ while ($row = mysqli_fetch_assoc($query)) {
         <p>Dobble Copyright &copy, 2020</p>
     </div>
 </footer>
-
-<!-- Bootstrap core JavaScript
+  <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
@@ -221,13 +173,16 @@ while ($row = mysqli_fetch_assoc($query)) {
 
 <script>
     function addPost() {
-        axios.post('../actions/actions.php', {
+        if(document.getElementById('text_wall').value.length > 0){
+            axios.post('../actions/actions.php', {
             text: document.getElementById('text_wall').value,
             type:'global'
         }).then(res => {
             console.log(res.data)
         })
-
+    
+        }
+        
 
     }
     function deletePost(id) {
@@ -240,5 +195,14 @@ while ($row = mysqli_fetch_assoc($query)) {
         })
     }
 </script>
+
+    <style>
+
+        #text_wall{
+            min-height: 100px;
+            min-width: 20%;
+            max-width: 100%;
+        }
+
 </body>
 </html>
