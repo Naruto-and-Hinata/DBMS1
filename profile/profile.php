@@ -5,7 +5,7 @@ include "../actions/db.php";
 $friends = [];
 
 $requests = [];
-$requests_users=[];
+
 
 $posts = [];
 $url = parse_url($_SERVER['REQUEST_URI']);
@@ -23,18 +23,7 @@ if (isset($params['id'])&& $params['id']!=$_COOKIE['id'] ) {
 oci_execute($user);
 $userdata = oci_fetch_assoc($user);
 
-$query = oci_parse($link, "select * from friends_info where user_id='" . $userdata['ID'] . "' ");
-oci_execute($query);
-oci_fetch_all($query,$friends,null,null,OCI_FETCHSTATEMENT_BY_ROW);
 
-
-$query = oci_parse($link, "select * from requests where user_id='" . $userdata['ID'] . "'");
-oci_execute($query);
-oci_fetch_all($query,$requests_users,null,null,OCI_FETCHSTATEMENT_BY_ROW);
-
-$postsQuery = oci_parse($link, "select * from profile_wall where user_id='" . $userdata['ID'] . "' order by created_date");
-oci_execute($postsQuery);
-while ($row = oci_fetch_assoc($postsQuery)) {
     array_push($posts, $row);
 }
 
@@ -57,6 +46,12 @@ while ($row = oci_fetch_assoc($postsQuery)) {
     <link href="../css/style.css" rel="stylesheet">
     <link href="../css/font-awesome.css" rel="stylesheet">
     <style>
+
+    	#text_wall{
+    		min-height: 100px;
+    		min-width: 20%;
+    		max-width: 100%;
+    	}
 
         .upload-btn-wrapper {
             margin: 7vw;
@@ -104,7 +99,7 @@ while ($row = oci_fetch_assoc($postsQuery)) {
 <header>
 
     <div class="container">
-        <img src="../img/logo.png" class="logo" alt="">
+        <img src="../img/logo.jpg" class="logo" alt="">
 
     </div>
 </header>
@@ -124,7 +119,7 @@ while ($row = oci_fetch_assoc($postsQuery)) {
             <ul class="nav navbar-nav">
                 <li><a href="../main/index.php">Home</a></li>
                 <li><a href="../members/members.php">Members</a></li>
-                <li><a href="../photos/photos.html">Photos</a></li>
+                <!-- <li><a href="../photos/photos.html">Photos</a></li> -->
                 <li class="active"><a href="profile.php">Profile</a></li>
                 <li><a style="color:orangered;" href="../login/logout.php">Log out</a></li>
             </ul>
@@ -146,7 +141,7 @@ while ($row = oci_fetch_assoc($postsQuery)) {
 
 
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-8" style="border: 3px double #999999; background-color:#FDFDFD;	 ">
                             <ul>
                                 <li>
                                     <strong>Name:</strong> <?php echo $userdata['FIRST_NAME'] . " " . $userdata['LAST_NAME'] ?>
@@ -172,7 +167,7 @@ while ($row = oci_fetch_assoc($postsQuery)) {
                                     if (isset($profile)) {
                                         echo "<form onsubmit=\"\">
                                         <div class=\"form-group\">
-                                            <textarea class=\"form-control\" id=\"text_wall\" placeholder=\"Write on the wall\"></textarea>
+                                            <textarea class=\"form-control\" id=\"text_wall\" placeholder=\"Write on the wall\" ></textarea>
                                         </div>
                                         <button type=\"submit\"  onclick=\"addPost()\" class=\"btn btn-default\">Submit</button>
                                         <div class=\"pull-right\">
@@ -213,71 +208,15 @@ while ($row = oci_fetch_assoc($postsQuery)) {
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="panel panel-default friends">
-                    <div class="panel-heading">
-                        <h3 class="panel-title"><?php
-                            if (isset($profile)) {
-                                echo "My Friends";
-                            } else {
-                                echo $userdata['first_name'] . "'s friends";
-                            }
-                            ?></h3>
-                    </div>
-                    <div class="panel-body">
-                        <ul>
-                            <?php
-                            if (isset($profile)) {
-                                if (sizeof($friends) == 0) {
-                                    echo "<h4>Friends list is empty. You can add new <a  href='members.php'>friends</a></h4>";
-                                }
-                            } else {
-                                if (sizeof($friends) == 0) {
-                                    echo "<h4>Friends list is empty.</h4>";
-                                }
-                            }
-                            for ($i = 0; $i < sizeof($friends); $i++) {
-                                echo "<li>
-                                        <a href='profile.php?id=" . $friends[$i]['ID'] . "' class=\"post-avatar thumbnail\"><img 
-                                            src= " . $friends[$i]['IMAGE'] . " alt=\"\"><div class=\"text-center\">" . $friends[$i]['FIRST_NAME'] . "</div></a></li>";
-                            }
-                            ?>
-                        </ul>
+
+                <?php
+                    include "../components/friends.php";          
+                ?>
 
 
-                    </div>
-                </div>
-
-
-                        <?php
-                        if (isset($profile)){
-                            echo "<div class=\"panel panel-default groups\">
-                    <div class=\"panel-heading\">
-                        <h3 class=\"panel-title\">Latest Requests</h3>
-                    </div>
-                    <div class=\"panel-body\">";
-
-                            if (sizeof($requests_users)>0){
-                            foreach ($requests_users as $user ){
-                                echo "<div class=\"group-item\">
-                            <img src='".$user['IMAGE']."' alt=\"\">
-                            <h4><a href='profile.php?id=".$user['ID']."' class=\"\">".$user['FIRST_NAME']." ".$user['LAST_NAME']."</a></h4>
-                            <form ><button onclick=\"addFriend(".$user['ID'].")\" class='btn btn-success btn-sm'>Accept</button>
-                            <button onclick=\"declineFriend(".$user['ID'].")\" class='btn btn-danger btn-sm'>Decline</button></form>
-
-                        </div>
-                        <div class=\"clearfix\"></div>";
-                            }
-                        }
-                        else{
-                            echo "<h4>Request list empty.</h4>";
-                        }
-
-                        echo "</div></div>";
-                        }
-
-
-
-                        ?>
+                <?php
+                    include "../components/requests.php";          
+                ?>
 
 
 
@@ -298,6 +237,7 @@ while ($row = oci_fetch_assoc($postsQuery)) {
 <script src="../https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="../js/axios.js"></script>
 <script src="../js/bootstrap.js"></script>
+<script src="../functions/script.js"></script>
 <script>
     function addPost() {
         axios.post('../actions/actions.php', {
@@ -306,20 +246,8 @@ while ($row = oci_fetch_assoc($postsQuery)) {
             console.log(res.data)
         })
     }
-    function addFriend(id){
-        axios.post('../actions/actions.php',{
-            friend_id:id
-        }).then(res=>{
-            console.log(res.data);
-        })
-    }
-    function declineFriend(id){
-        axios.post('../actions/actions.php',{
-            decline:id
-        }).then(res=>{
-            console.log(res.data);
-        })
-    }
+    
+    
 </script>
 </body>
 </html>

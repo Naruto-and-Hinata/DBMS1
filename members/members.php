@@ -27,7 +27,8 @@ while ($row = mysqli_fetch_assoc($query)) {
 
 }
 
-
+$user = mysqli_query($link, "select * from users where hash='" . $_COOKIE['hash'] . "'");
+$userdata = mysqli_fetch_assoc($user);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +51,7 @@ while ($row = mysqli_fetch_assoc($query)) {
 
 <header>
     <div class="container">
-        <img src="../img/logo.png" class="logo" alt="">
+        <img src="../img/logo.jpg" class="logo" alt="">
 
     </div>
 </header>
@@ -70,7 +71,7 @@ while ($row = mysqli_fetch_assoc($query)) {
             <ul class="nav navbar-nav">
                 <li ><a href="../main/index.php">Home</a></li>
                 <li class="active"><a href="members.php">Members</a></li>
-                <li><a href="../photos/photos.html">Photos</a></li>
+                <!-- <li><a href="../photos/photos.html">Photos</a></li> -->
                 <li><a href="../profile/profile.php">Profile</a></li>
                 <li><a style="color:orangered;" href="../login/logout.php">Log out</a></li>
 
@@ -83,10 +84,12 @@ while ($row = mysqli_fetch_assoc($query)) {
     <div class="container">
         <div class="row">
             <div class="col-md-8">
-                <form method="post">
-                    <input name="search" class="form-control" type="search" placeholder="Search..">
-                    <input name="submit" class="btn btn-success btn-block" value="Search!" type="submit">
+                <form method="post" style="display: flex;">
+                    <input name="search" class="form-control" type="search" placeholder="Search.." >
+                    <input name="submit" class="btn btn-success btn-block" value="Search!" type="submit" style="width: 100px;">
                 </form>
+                <br>
+                <div>Assignment</div>
                 <div class="members">
                     <h1 class="page-header">Members</h1>
                     <?php
@@ -121,27 +124,16 @@ while ($row = mysqli_fetch_assoc($query)) {
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="panel panel-default friends">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">My Friends</h3>
-                    </div>
-                    <div class="panel-body">
-                        <ul>
-                            <?php
-                                if (sizeof($friends)==0){
-                                    echo "<h4>Friends list is empty. You can add new <a  href='members.php'>friends</a></h4>";
-                                }
-                            for ($i = 0; $i < sizeof($friends); $i++) {
-                                echo "<li>
-                                        <a href='../profile/profile.php?id=".$friends[$i]['id']."' class=\"post-avatar thumbnail\"><img
-                                            src= ". $friends[$i]['image_path']." alt=\"\"><div class=\"text-center\">".$friends[$i]['first_name']."</div></a></li>";
-                                echo "<div class=\"clearfix\"></div><a class=\"btn btn-primary\" href=\"members.php\">View All Friends</a>";
-                            }
-                            ?>
-                        </ul>
+                <?php
+                    $profile = 1;
+                    include '../components/friends.php';
+                ?>
 
-                    </div>
-                </div>
+                <?php
+                    $profile = 1;
+                    include '../components/requests.php';
+                ?>
+
             </div>
         </div>
     </div>
