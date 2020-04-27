@@ -1,35 +1,32 @@
 <?php
-$link = mysqli_connect("localhost", "root", "", "middb");
+include '../actions/db.php';
 $friends = [];
 $profile=1;
 $requests = [];
 $requests_users=[];
-$user = mysqli_query($link, "select * from users where hash='" . $_COOKIE['hash'] . "'");
+$user = oci_parse($link, "select * from users where hash='" . $_COOKIE['hash'] . "'");
+oci_execute($user);
+$userdata = oci_fetch_assoc($user);
 
-$userdata = mysqli_fetch_assoc($user);
-$query = mysqli_query($link, "select * from friends where user='" . $userdata['id'] . "' limit 15");
-while ($row = mysqli_fetch_assoc($query)) {
-    $images = mysqli_query($link, "select id,image_path,first_name from users where id='" . $row['friend'] . "'");
-    array_push($friends, mysqli_fetch_assoc($images));
-}
-$query = mysqli_query($link, "select * from requests where user_to='" . $userdata['id'] . "'and  accepted=0 limit 5");
-while ($row = mysqli_fetch_assoc($query)) {
-    array_push($requests, $row);
-    $user = mysqli_query($link, "select id,image_path,first_name,last_name from users where id='" . $row['user'] . "'");
-    array_push($requests_users, mysqli_fetch_assoc($user));
+$query = oci_parse($link, "select * from friends_info where user_id='" . $userdata['ID'] . "' ");
+oci_execute($query);
+oci_fetch_all($query,$friends,null,null,OCI_FETCHSTATEMENT_BY_ROW);
 
-}
+
+$query = oci_parse($link, "select * from requests where user_id='" . $userdata['ID'] . "'");
+oci_execute($query);
+oci_fetch_all($query,$requests_users,null,null,OCI_FETCHSTATEMENT_BY_ROW);
+
+
 if(!isset($_COOKIE['id'])){
     header('Location: ../login/login.php');
 }
 $wall=[];
 $users=[];
-$query=mysqli_query($link,"select * from wall order by date desc ");
-while ($row = mysqli_fetch_assoc($query)) {
-    array_push($wall, $row);
-    $creator=mysqli_query($link,"select * from users where id='".$row['user']."' ");
-    array_push($users,mysqli_fetch_assoc($creator));
-}
+$query=oci_parse($link,"select * from wall_posts ");
+oci_execute($query);
+oci_fetch_all($query,$wall,null,null,OCI_FETCHSTATEMENT_BY_ROW)
+
 
 ?>
 <!DOCTYPE html>
@@ -110,14 +107,12 @@ while ($row = mysqli_fetch_assoc($query)) {
 
                     if (sizeof($wall) > 0) {
                         foreach ($wall as $post) {
-                            foreach ($users as $user){
+//                            if ($user['ID']==$post['USER_ID']){
+//                                $post_user=$user;
+//                            }
 
-                                if ($user['id']==$post['user']){
-                                    $post_user=$user;
-                                }
-                            }
-                            if($_COOKIE['id']==$post['user']){
-                                $delete="<button onclick='deletePost(".$post['id'].")' class='btn btn-link btn-danger'>Delete</button>";
+                            if($_COOKIE['id']==$post['USER_ID']){
+                                $delete="<button onclick='deletePost(".$post['ID'].")' class='btn btn-link btn-danger'>Delete</button>";
                             }
                             else{
                                 $delete='';
@@ -125,14 +120,14 @@ while ($row = mysqli_fetch_assoc($query)) {
                             echo "<div class=\"panel panel-default post\">";
                             echo "<div class=\"panel-body\">";
                             echo "<div class=\"col-sm-2\">
-                                        <a href='../profile/profile.php?id=" . $post_user['id'] . "' class=\"post-avatar thumbnail\"><img 
-                                            src= " . $post_user['image_path']  . " alt=\"\"><div class=\"text-center\">" . $post_user['first_name'] . "</div></a></div>";
+                                        <a href='../profile/profile.php?id=" . $post['USER_ID'] . "' class=\"post-avatar thumbnail\"><img 
+                                            src= " . $post['IMAGE']  . " alt=\"\"><div class=\"text-center\">" . $post['FIRST_NAME'] . "</div></a></div>";
                         echo "<div class=\"col-sm-10\">";
-                            echo "<div class=\"likes text-end\">" . $post['date'] . "</div>";
+                            echo "<div class=\"likes text-end\">" . $post['TIME'] . "</div>";
 
                             echo "<div class=\"bubble \" style='width: 90%'>";
                             echo "<div class=\"pointer\">";
-                            echo "<p>" . $post['text'] . "</p>";
+                            echo "<p>" . $post['TEXT'] . "</p>";
                             echo "</div>";
                             echo "</div>";
                             echo "<div class=\"clearfix\"></div>";
@@ -143,6 +138,7 @@ while ($row = mysqli_fetch_assoc($query)) {
 
                     }
                     ?>
+
 
 
             </div>

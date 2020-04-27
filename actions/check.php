@@ -2,14 +2,16 @@
 // Скрипт проверки
 
 // Соединямся с БД
-$link = mysqli_connect("localhost", "root", "", "middb");
+include "db.php";
 echo $_COOKIE['hash'] . "<br>";
 
 if (isset($_COOKIE['id']) and isset($_COOKIE['hash'])) {
-    $query = mysqli_query($link, "SELECT * FROM users WHERE id = '" . intval($_COOKIE['id']) . "' LIMIT 1");
-    $userdata = mysqli_fetch_assoc($query);
-    echo $userdata['hash'] . "   ";
-    if (($userdata['hash'] !== $_COOKIE['hash']) or ($userdata['id'] !== $_COOKIE['id'])) {
+    $query = oci_parse($link, "SELECT * FROM users WHERE id = '" . intval($_COOKIE['id']) . "' ");
+    oci_execute($query);
+    $userdata = oci_fetch_assoc($query);
+    print_r($userdata);
+    echo $userdata['HASH'] . "   ";
+    if (($userdata['HASH'] !== $_COOKIE['hash']) or ($userdata['ID'] !== $_COOKIE['id'])) {
 
         print "Error";
     } else {
