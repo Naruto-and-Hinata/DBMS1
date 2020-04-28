@@ -21,6 +21,7 @@ if (isset($params['id'])&& $params['id']!=$_COOKIE['id'] ) {
     $profile = 1;
 }
 $userdata = mysqli_fetch_assoc($user);
+$date = mysqli_query($link, "select to_char(date_birth,'DAY MONTH YYYY') from users where  hash='" . $_COOKIE['hash'] . "'");
 
 $query = mysqli_query($link, "select * from friends where user='" . $userdata['id'] . "' limit 15");
 while ($row = mysqli_fetch_assoc($query)) {
@@ -110,44 +111,31 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
     </div>
 </header>
 
-<nav class="navbar navbar-default">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
-                    aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-        </div>
-        <div id="navbar" class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li><a href="../main/index.php">Home</a></li>
-                <li><a href="../members/members.php">Members</a></li>
-                <!-- <li><a href="../photos/photos.html">Photos</a></li> -->
-                <li class="active"><a href="profile.php">Profile</a></li>
-                <li><a style="color:orangered;" href="../login/logout.php">Log out</a></li>
-            </ul>
-        </div><!--/.nav-collapse -->
-    </div>
-</nav>
+<?php 
+    include '../components/navigation.php';
+?> 
 
 <section>
     <div class="container">
-        <div class="row">
+        <div class="row" style="border-bottom: 1px solid #eee;">
             <div class="col-md-8">
                 <div class="profile">
                     <h1 class="page-header"> <?php echo $userdata['first_name'] . " " . $userdata['last_name'] ?></h1>
-                    <div class="row">
+                    <div class="row" style="border-bottom: 1px solid #eee;
+}">
                         <div class="col-md-4">
                             <img <?php
                             echo "src=" . $userdata['image_path'];
-                            ?> class="img-thumbnail" alt="">
-
-
+                            ?> style="border-radius: 50%;" class="img-thumbnail" alt="" >
+                            <br>
+                            <br>
+                            <form>
+                                <button style="width: 100%; background-image: linear-gradient(#04519b, #044687 60%, #033769);" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                        Add Photo
+                    </button>
+                            </form>
                         </div>
-                        <div class="col-md-8" style="border: 3px double #999999; background-color:#FDFDFD;	 ">
+                        <div class="col-md-8">
                             <ul>
                                 <li>
                                     <strong>Name:</strong> <?php echo $userdata['first_name'] . " " . $userdata['last_name'] ?>
@@ -187,7 +175,7 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                                     <?php
                                     if (sizeof($posts) > 0) {
                                         echo "<div class=\"col-sm-2\">
-                                        <a href='profile.php?id=" . $userdata['id'] . "' class=\"post-avatar thumbnail\"><img 
+                                        <a href='profile.php?id=" . $userdata['id'] . "' class=\"post-avatar thumbnail\"><img style=\"border-radius:50%;\" 
                                             src= " . $userdata['image_path'] . " alt=\"\"><div class=\"text-center\">" . $userdata['first_name'] . "</div></a></div>";
                                     }
                                     ?>
@@ -203,6 +191,7 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                                             echo "</div>";
                                             echo "</div>";
                                             echo "<div class=\"clearfix\"></div>";
+                                            echo "<br>";
                                         }
                                         ?>
 
@@ -222,7 +211,10 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                     include "../components/requests.php";          
                 ?>
 
-
+                <?php
+                    include "../components/photos.php";          
+                ?>
+                
 
             </div>
         </div>
