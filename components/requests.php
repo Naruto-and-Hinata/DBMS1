@@ -3,13 +3,9 @@
 $requests_users=[];
 $requests = [];
 
-$query = mysqli_query($link, "select * from requests where user_to='" . $userdata['id'] . "'and  accepted=0 limit 5");
-while ($row = mysqli_fetch_assoc($query)) {
-    array_push($requests, $row);
-    $user = mysqli_query($link, "select id,image_path,first_name,last_name from users where id='" . $row['user'] . "'");
-    array_push($requests_users, mysqli_fetch_assoc($user));
-
-}
+$query = oci_parse($link, "select * from requests where user_id='" . $userdata['ID'] . "'");
+oci_execute($query);
+oci_fetch_all($query,$requests_users,null,null,OCI_FETCHSTATEMENT_BY_ROW);
 
 
 
@@ -24,10 +20,10 @@ while ($row = mysqli_fetch_assoc($query)) {
             if (sizeof($requests_users)>0){
                 foreach ($requests_users as $user ){
                     echo "<div class=\"group-item\">
-                    <img src='".$user['image_path']."' alt=\"\">
-                    <h4><a href='profile.php?id=".$user['id']."' class=\"\">".$user['first_name']." ".$user['last_name']."</a></h4>
-                    <form ><button onclick=\"addFriend(".$user['id'].")\" class='btn btn-success btn-sm'>Accept</button>
-                    <button onclick=\"declineFriend(".$user['id'].")\" class='btn btn-danger btn-sm'>Decline</button></form>
+                    <img src='".$user['IMAGE']."' alt=\"\">
+                    <h4><a href='profile.php?id=".$user['ID']."' class=\"\">".$user['FIRST_NAME']." ".$user['LAST_NAME']."</a></h4>
+                    <form onsubmit='' ><button onclick=\"addFriend(".$user['ID'].")\" class='btn btn-success btn-sm'>Accept</button>
+                    <button onclick=\"declineFriend(".$user['ID'].")\" class='btn btn-danger btn-sm'>Decline</button></form>
                     </div>
                     <div class=\"clearfix\"></div>";
                 }

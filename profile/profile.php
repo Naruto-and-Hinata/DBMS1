@@ -6,7 +6,9 @@ $friends = [];
 
 $requests = [];
 
-
+$is_friend=false;
+$is_request=false;
+$is_acceptable=false;
 $posts = [];
 $url = parse_url($_SERVER['REQUEST_URI']);
 if (isset($url['query'])) {
@@ -14,18 +16,36 @@ if (isset($url['query'])) {
 
 }
 if (isset($params['id'])&& $params['id']!=$_COOKIE['id'] ) {
-    $user = oci_parse($link, "select * from users where id='" . $params['id'] . "'");
+    $user = oci_parse($link, "select id,to_char(DATE_BIRTH,'Month DD, YYYY') as \"DATE_BIRTH\",FIRST_NAME,LAST_NAME,CITY,PHONE_NUMBER,IMAGE,GENDER from users where id='" . $params['id'] . "'");
+    $profile=0;
+    $query=oci_parse($link,"select * from FRIENDS_INFO  where USER_ID in('".$_COOKIE['id']."','".$params['id']."')  ");
+    oci_execute($query);
+    $friend=oci_fetch_assoc($query);
+    if (oci_num_rows($query)>=1){
+        if ($_COOKIE['id']!=$friend['FRIEND'] && !$friend['ACCEPTED']){
+            $is_acceptable=true;
+        }
+        else{
+            if ($friend['ACCEPTED']==1)
+                $is_friend=true;
+            $is_request=true;
+        }
+
+    }
 
 } else {
-    $user = oci_parse($link, "select * from users where hash='" . $_COOKIE['hash'] . "'");
+    $user = oci_parse($link, "select id,to_char(DATE_BIRTH,'Month DD, YYYY') as \"DATE_BIRTH\",FIRST_NAME,LAST_NAME,CITY,PHONE_NUMBER,IMAGE,GENDER from users where hash='" . $_COOKIE['hash'] . "' ");
     $profile = 1;
 }
 oci_execute($user);
 $userdata = oci_fetch_assoc($user);
+//echo "Is friend ".$is_friend."\n";
+//echo "is_acceptable".$is_acceptable."\n";
+//echo "is request".$is_request;
+$query=oci_parse($link,"select id,USER_ID,to_char(CREATED_DATE,'HH24:MI, Month DD, YYYY') as \"CREATED_DATE\",TEXT from PROFILE_WALL where USER_ID='".$userdata   ['ID']."'");
+oci_execute($query);
+oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
 
-
-    array_push($posts, $row);
-}
 
 
 
@@ -38,7 +58,7 @@ $userdata = oci_fetch_assoc($user);
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Dobble Social Network: Profile Page</title>
-
+    <link rel="icon" href="../favicon.PNG">
     <!-- Bootstrap core CSS -->
     <link href="../css/bootstrap.css" rel="stylesheet">
 
@@ -138,10 +158,40 @@ $userdata = oci_fetch_assoc($user);
                             <img <?php
                             echo "src=" . $userdata['IMAGE'];
                             ?> class="img-thumbnail" alt="">
+                            <div style="margin-top: 0.5rem;<?php
+                            if ($profile)
+                                echo "display: none;";
+                            else
+                                echo "display: block;";
+                            ?>">
+                                <button class="btn <?php
+                                if ($is_acceptable)
+                                    echo 'btn-warning' ;
+                                else
+                                    echo 'btn-success'?>
+                                     btn-sm
+                                     <?php
+                                if ($is_friend||$is_request&&!$is_acceptable)
+                                    echo 'disabled'
+                                ?>" onclick="<?php
+                                if ($is_acceptable)
+                                    echo 'addFriend('.$userdata['ID'].')';
+                                else
+                                    echo 'sendRequest('.$userdata['ID'].')'
+                                ?>" style="width: 49%"><?php
+                                    if($is_acceptable)
+                                        echo 'Add to friend' ;
+                                    else if ($is_friend)
+                                        echo 'You are friends!';
+                                    else if ($is_request)
+                                        echo 'Request sent' ;
+                                    else echo 'Send request'?></button>
+                                <button class="btn btn-danger btn-sm " style="<?php if (!$is_friend||!$is_request) echo 'display: none;' ?>width: 49%" onclick="deleteFriend(<?php echo $userdata['ID']?>)">Delete friend</button>
 
+                            </div>
 
                         </div>
-                        <div class="col-md-8" style="border: 3px double #999999; background-color:#FDFDFD;	 ">
+                        <div class="col-md-8" >
                             <ul>
                                 <li>
                                     <strong>Name:</strong> <?php echo $userdata['FIRST_NAME'] . " " . $userdata['LAST_NAME'] ?>
@@ -152,6 +202,7 @@ $userdata = oci_fetch_assoc($user);
                                 <li><strong>City:</strong> <?php echo $userdata['CITY'] ?></li>
 
                             </ul>
+
                         </div>
                     </div>
                     <br><br>
@@ -164,7 +215,7 @@ $userdata = oci_fetch_assoc($user);
 
                                 <div class="panel-body">
                                     <?php
-                                    if (isset($profile)) {
+                                    if ($profile) {
                                         echo "<form onsubmit=\"\">
                                         <div class=\"form-group\">
                                             <textarea class=\"form-control\" id=\"text_wall\" placeholder=\"Write on the wall\" ></textarea>
@@ -184,12 +235,14 @@ $userdata = oci_fetch_assoc($user);
                                         <a href='profile.php?id=" . $userdata['ID'] . "' class=\"post-avatar thumbnail\"><img 
                                             src= " . $userdata['IMAGE'] . " alt=\"\"><div class=\"text-center\">" . $userdata['FIRST_NAME'] . "</div></a></div>";
                                     }
+                                    else if (!$profile)
+                                        echo "<div class='text-center' style='margin-bottom: 1.5vw;font-weight: bold' >Nothing to show :(</div>";
                                     ?>
 
                                     <div class="col-sm-10">
                                         <?php
                                         for ($i = 0; $i < sizeof($posts); $i++) {
-                                            echo "<div class=\"likes text-end\">" . $posts[$i]['CREATE_DATE'] . "</div>";
+                                            echo "<div class=\"likes text-end\">" . $posts[$i]['CREATED_DATE'] . "</div>";
 
                                             echo "<div class=\"bubble w-100\">";
                                             echo "<div class=\"pointer w-100\">";
@@ -215,6 +268,7 @@ $userdata = oci_fetch_assoc($user);
 
 
                 <?php
+                if ($profile)
                     include "../components/requests.php";          
                 ?>
 
@@ -234,7 +288,7 @@ $userdata = oci_fetch_assoc($user);
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
-<script src="../https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="../js/axios.js"></script>
 <script src="../js/bootstrap.js"></script>
 <script src="../functions/script.js"></script>
@@ -243,6 +297,15 @@ $userdata = oci_fetch_assoc($user);
         axios.post('../actions/actions.php', {
             text: document.getElementById('text_wall').value,
         }).then(res => {
+            console.log(res.data)
+        })
+    }
+    function deleteFriend(id) {
+        axios.post('../actions/actions.php', {
+            friend_id:id,
+            delete:true
+        }).then(res => {
+            location.reload()
             console.log(res.data)
         })
     }
