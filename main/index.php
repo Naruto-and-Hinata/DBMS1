@@ -1,5 +1,7 @@
 <?php
+
 include '../actions/db.php';
+
 $friends = [];
 $profile=1;
 $requests = [];
@@ -54,34 +56,18 @@ oci_fetch_all($query,$wall,null,null,OCI_FETCHSTATEMENT_BY_ROW)
     </div>
 </header>
 
-<nav class="navbar navbar-default">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
-                    aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-        </div>
-        <div id="navbar" class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li class="active"><a href="index.php">Home</a></li>
-                <li><a href="../members/members.php">Members</a></li>
-                <!-- <li><a href="../photos/photos.html">Photos</a></li> -->
-                <li><a href="../profile/profile.php">Profile</a></li>
-                <li><a style="color:orangered;" href="../login/logout.php">Log out</a></li>
-
-            </ul>
-        </div><!--/.nav-collapse -->
-    </div>
-</nav>
+<?php 
+	include '../components/navigation.php';
+?> 
 
 <section>
     <div class="container">
+    	
         <div class="row">
             <div class="col-md-8">
+            	<?php 
+                    include '../components/friends.php';
+		?> 
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title">Wall</h3>
@@ -120,8 +106,10 @@ oci_fetch_all($query,$wall,null,null,OCI_FETCHSTATEMENT_BY_ROW)
                             echo "<div class=\"panel panel-default post\">";
                             echo "<div class=\"panel-body\">";
                             echo "<div class=\"col-sm-2\">
+
                                         <a href='../profile/profile.php?id=" . $post['USER_ID'] . "' class=\"post-avatar thumbnail\"><img 
                                             src= " . $post['IMAGE']  . " alt=\"\"><div class=\"text-center\">" . $post['FIRST_NAME'] . "</div></a></div>";
+
                         echo "<div class=\"col-sm-10\">";
                             echo "<div class=\"likes text-end\">" . $post['TIME'] . "</div>";
 
@@ -144,12 +132,10 @@ oci_fetch_all($query,$wall,null,null,OCI_FETCHSTATEMENT_BY_ROW)
             </div>
             <div class="col-md-4">  
                 <?php
-                    include '../components/friends.php';
-                ?> 
-
-                <?php 
                     include '../components/requests.php';
                 ?> 
+
+                
             </div>
         </div>
     </div>

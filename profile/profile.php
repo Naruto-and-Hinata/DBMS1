@@ -37,6 +37,7 @@ if (isset($params['id'])&& $params['id']!=$_COOKIE['id'] ) {
     $user = oci_parse($link, "select id,to_char(DATE_BIRTH,'Month DD, YYYY') as \"DATE_BIRTH\",FIRST_NAME,LAST_NAME,CITY,PHONE_NUMBER,IMAGE,GENDER from users where hash='" . $_COOKIE['hash'] . "' ");
     $profile = 1;
 }
+
 oci_execute($user);
 $userdata = oci_fetch_assoc($user);
 //echo "Is friend ".$is_friend."\n";
@@ -45,6 +46,8 @@ $userdata = oci_fetch_assoc($user);
 $query=oci_parse($link,"select id,USER_ID,to_char(CREATED_DATE,'HH24:MI, Month DD, YYYY') as \"CREATED_DATE\",TEXT from PROFILE_WALL where USER_ID='".$userdata   ['ID']."'");
 oci_execute($query);
 oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
+
+
 
 
 
@@ -124,36 +127,19 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
     </div>
 </header>
 
-<nav class="navbar navbar-default">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
-                    aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-        </div>
-        <div id="navbar" class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li><a href="../main/index.php">Home</a></li>
-                <li><a href="../members/members.php">Members</a></li>
-                <!-- <li><a href="../photos/photos.html">Photos</a></li> -->
-                <li class="active"><a href="profile.php">Profile</a></li>
-                <li><a style="color:orangered;" href="../login/logout.php">Log out</a></li>
-            </ul>
-        </div><!--/.nav-collapse -->
-    </div>
-</nav>
+<?php 
+    include '../components/navigation.php';
+?> 
 
 <section>
     <div class="container">
-        <div class="row">
+        <div class="row" style="border-bottom: 1px solid #eee;">
             <div class="col-md-8">
                 <div class="profile">
-                    <h1 class="page-header"> <?php echo $userdata['FIRST_NAME'] . " " . $userdata['LAST_NAME'] ?></h1>
-                    <div class="row">
+
+                    <h1 class="page-header"> <?php echo $userdata['first_name'] . " " . $userdata['last_name'] ?></h1>
+                    <div class="row" style="border-bottom: 1px solid #eee;
+}">
                         <div class="col-md-4">
                             <img <?php
                             echo "src=" . $userdata['IMAGE'];
@@ -192,6 +178,20 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
 
                         </div>
                         <div class="col-md-8" >
+
+                            echo "src=" . $userdata['image_path'];
+                            ?> style="border-radius: 50%;" class="img-thumbnail" alt="" >
+                            <br>
+                            <br>
+                            <form>
+                                <button style="width: 100%; background-image: linear-gradient(#04519b, #044687 60%, #033769);" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                        Profile Photo
+                    </button>
+                            </form>
+
+                        </div>
+                        <div class="col-md-8">
+
                             <ul>
                                 <li>
                                     <strong>Name:</strong> <?php echo $userdata['FIRST_NAME'] . " " . $userdata['LAST_NAME'] ?>
@@ -232,8 +232,10 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
                                     <?php
                                     if (sizeof($posts) > 0) {
                                         echo "<div class=\"col-sm-2\">
+
                                         <a href='profile.php?id=" . $userdata['ID'] . "' class=\"post-avatar thumbnail\"><img 
                                             src= " . $userdata['IMAGE'] . " alt=\"\"><div class=\"text-center\">" . $userdata['FIRST_NAME'] . "</div></a></div>";
+
                                     }
                                     else if (!$profile)
                                         echo "<div class='text-center' style='margin-bottom: 1.5vw;font-weight: bold' >Nothing to show :(</div>";
@@ -250,6 +252,7 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
                                             echo "</div>";
                                             echo "</div>";
                                             echo "<div class=\"clearfix\"></div>";
+                                            echo "<br>";
                                         }
                                         ?>
 
@@ -272,8 +275,15 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
                     include "../components/requests.php";          
                 ?>
 
-
-
+                <?php
+                    include "../components/photos.php";          
+                ?>
+                <form>
+                <button style="width: 100%; background-image: linear-gradient(#04519b, #044687 60%, #033769);" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                        Add Photo
+                    </button>    
+                </form>
+                
             </div>
         </div>
     </div>

@@ -65,40 +65,39 @@ $userdata = oci_fetch_assoc($user);
     </div>
 </header>
 
-<nav class="navbar navbar-default">
-    <div class="container">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
-                    aria-expanded="false" aria-controls="navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-        </div>
-        <div id="navbar" class="collapse navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li ><a href="../main/index.php">Home</a></li>
-                <li class="active"><a href="members.php">Members</a></li>
-                <!-- <li><a href="../photos/photos.html">Photos</a></li> -->
-                <li><a href="../profile/profile.php">Profile</a></li>
-                <li><a style="color:orangered;" href="../login/logout.php">Log out</a></li>
-
-            </ul>
-        </div><!--/.nav-collapse -->
-    </div>
-</nav>
+<?php 
+    include '../components/navigation.php';
+?> 
 
 <section>
     <div class="container">
         <div class="row">
             <div class="col-md-8">
+                <?php
+                    $profile = 1;
+                    include '../components/friends.php';
+                ?>
+
                 <form method="post" style="display: flex;">
-                    <input name="search" class="form-control" type="search" placeholder="Search.." >
+                    <input name="search" class="form-control" type="search" placeholder="Search.." style="margin-right: 20px; margin-left: 0%;">
                     <input name="submit" class="btn btn-success btn-block" value="Search!" type="submit" style="width: 100px;">
                 </form>
                 <br>
-                <div>Assignment</div>
+
+                <p>
+                    <button style="width: 100px;" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                        Filter
+                    </button>
+                </p>
+                <div class="collapse" id="collapseExample">
+                    <div class="card card-body">
+                        <?php 
+                        include '../components/filter.php';
+                        ?>   
+                    </div>
+                </div>
+
+                
                 <div class="members">
                     <h1 class="page-header">Members</h1>
                     <?php
@@ -111,7 +110,9 @@ $userdata = oci_fetch_assoc($user);
                                 $class="btn btn-success btn-block";
                             echo "<div class=\"row member-row\">
                         <div class=\"col-md-3\">
+
                             <img src=".$user['IMAGE']." class=\"img-thumbnail\" alt=\"\">
+
                             <div class=\"text-center\">
                                ".$user['FIRST_NAME']." ".$user['LAST_NAME']."
                             </div>
@@ -133,10 +134,7 @@ $userdata = oci_fetch_assoc($user);
                 </div>
             </div>
             <div class="col-md-4">
-                <?php
-                    $profile = 1;
-                    include '../components/friends.php';
-                ?>
+                
 
                 <?php
                     $profile = 1;
@@ -160,7 +158,27 @@ $userdata = oci_fetch_assoc($user);
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="../js/bootstrap.js"></script>
 <script src="../js/axios.js"></script>
+
 <script src="../functions/script.js">
+
+<script>
+    function addFriend(id) {
+        axios.post('../actions/actions.php',{friend:id}).then(res=>{
+            console.log(res.data)
+        })
+    }
+
+    function show() {
+        // body...
+        var x = document.getElementById("filter");
+        if (x.style.display === "none") {
+            x.style.display = "block";
+        } else {
+            x.style.display = "none";
+        }
+        
+    }
+
 </script>
 </body>
 </html>

@@ -20,10 +20,12 @@ oci_fetch_all($query,$requests_users,null,null,OCI_FETCHSTATEMENT_BY_ROW);
             if (sizeof($requests_users)>0){
                 foreach ($requests_users as $user ){
                     echo "<div class=\"group-item\">
+
                     <img src='".$user['IMAGE']."' alt=\"\">
                     <h4><a href='profile.php?id=".$user['ID']."' class=\"\">".$user['FIRST_NAME']." ".$user['LAST_NAME']."</a></h4>
                     <form onsubmit='' ><button onclick=\"addFriend(".$user['ID'].")\" class='btn btn-success btn-sm'>Accept</button>
                     <button onclick=\"declineFriend(".$user['ID'].")\" class='btn btn-danger btn-sm'>Decline</button></form>
+
                     </div>
                     <div class=\"clearfix\"></div>";
                 }
