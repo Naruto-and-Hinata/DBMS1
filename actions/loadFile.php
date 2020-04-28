@@ -37,13 +37,21 @@ if ($uploadOk == 0) {
 // if everything is ok, try to upload file
 } else {
     if (move_uploaded_file($_FILES["userfile"]["tmp_name"], $target_file)) {
-        $link = mysqli_connect("localhost", "root", "", "middb");
+        include 'db.php';
+
         if (isset($_COOKIE['id'])) {
-            $query = mysqli_query($link, "UPDATE users SET image_path='$target_file' WHERE id = '" . intval($_COOKIE['id']) . "' LIMIT 1");
+            if (isset($_POST['add_photo'])){
+                $date=date('d-m-Y h:i:s');
+                $query = oci_parse($link, "insert into USERS_photos(id,user_id,created_date,photo) values (USER_ID.nextval,'".$_COOKIE['id']."',to_date('$date','dd-mm-yy hh24:mi:ss'),'$target_file')");
+                oci_execute($query);
+            }else{
+                $query = oci_parse($link, "UPDATE users SET image='$target_file' WHERE id = '" . intval($_COOKIE['id']) . "'");
+                oci_execute($query);
+            }
         }
 
     }
-    header('Location: profile.php');
+    header('Location: ../profile/profile.php');
 }
 
 

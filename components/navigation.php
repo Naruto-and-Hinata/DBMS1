@@ -15,11 +15,12 @@
             <ul class="nav navbar-nav">
                 <?php
                 $path = explode("/", $_SERVER['PHP_SELF']);
+//                print_r($path[2]);
                 ?>
-                <li  <?php if($path[1]=="main") echo "class='active'";?> > <a href="../main/index.php">Home</a></li>
-                <li <?php if($path[1]=="members") echo "class='active'";?> > <a href="../members/members.php">Members</a></li>
+                <li  <?php if($path[2]=="main") echo "class='active'";?> > <a href="../main/index.php">Home</a></li>
+                <li <?php if($path[2]=="members") echo "class='active'";?> > <a href="../members/members.php">Members</a></li>
                 <!-- <li><a href="../photos/photos.html">Photos</a></li> -->
-                <li <?php if($path[1]=="profile") echo "class='active'";?> ><a href="../profile/profile.php">Profile</a></li>
+                <li <?php if($path[2]=="profile") echo "class='active'";?> ><a href="../profile/profile.php">Profile</a></li>
                 <li><a style="color:orangered;" href="../login/logout.php">Log out</a></li>
 
             </ul>

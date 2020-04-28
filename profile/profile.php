@@ -6,29 +6,28 @@ $friends = [];
 
 $requests = [];
 
-$is_friend=false;
-$is_request=false;
-$is_acceptable=false;
+$is_friend = false;
+$is_request = false;
+$is_acceptable = false;
 $posts = [];
 $url = parse_url($_SERVER['REQUEST_URI']);
 if (isset($url['query'])) {
     parse_str($url['query'], $params);
 
 }
-if (isset($params['id'])&& $params['id']!=$_COOKIE['id'] ) {
+if (isset($params['id']) && $params['id'] != $_COOKIE['id']) {
     $user = oci_parse($link, "select id,to_char(DATE_BIRTH,'Month DD, YYYY') as \"DATE_BIRTH\",FIRST_NAME,LAST_NAME,CITY,PHONE_NUMBER,IMAGE,GENDER from users where id='" . $params['id'] . "'");
-    $profile=0;
-    $query=oci_parse($link,"select * from FRIENDS_INFO  where USER_ID in('".$_COOKIE['id']."','".$params['id']."')  ");
+    $profile = 0;
+    $query = oci_parse($link, "select * from FRIENDS_INFO  where USER_ID in('" . $_COOKIE['id'] . "','" . $params['id'] . "')  ");
     oci_execute($query);
-    $friend=oci_fetch_assoc($query);
-    if (oci_num_rows($query)>=1){
-        if ($_COOKIE['id']!=$friend['FRIEND'] && !$friend['ACCEPTED']){
-            $is_acceptable=true;
-        }
-        else{
-            if ($friend['ACCEPTED']==1)
-                $is_friend=true;
-            $is_request=true;
+    $friend = oci_fetch_assoc($query);
+    if (oci_num_rows($query) >= 1) {
+        if ($_COOKIE['id'] != $friend['FRIEND'] && !$friend['ACCEPTED']) {
+            $is_acceptable = true;
+        } else {
+            if ($friend['ACCEPTED'] == 1)
+                $is_friend = true;
+            $is_request = true;
         }
 
     }
@@ -43,13 +42,9 @@ $userdata = oci_fetch_assoc($user);
 //echo "Is friend ".$is_friend."\n";
 //echo "is_acceptable".$is_acceptable."\n";
 //echo "is request".$is_request;
-$query=oci_parse($link,"select id,USER_ID,to_char(CREATED_DATE,'HH24:MI, Month DD, YYYY') as \"CREATED_DATE\",TEXT from PROFILE_WALL where USER_ID='".$userdata   ['ID']."'");
+$query = oci_parse($link, "select id,USER_ID,to_char(CREATED_DATE,'HH24:MI, Month DD, YYYY') as \"CREATED_DATE\",TEXT from PROFILE_WALL where USER_ID='" . $userdata   ['ID'] . "'");
 oci_execute($query);
-oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
-
-
-
-
+oci_fetch_all($query, $posts, null, null, OCI_FETCHSTATEMENT_BY_ROW);
 
 
 ?>
@@ -70,11 +65,11 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
     <link href="../css/font-awesome.css" rel="stylesheet">
     <style>
 
-    	#text_wall{
-    		min-height: 100px;
-    		min-width: 20%;
-    		max-width: 100%;
-    	}
+        #text_wall {
+            min-height: 100px;
+            min-width: 20%;
+            max-width: 100%;
+        }
 
         .upload-btn-wrapper {
             margin: 7vw;
@@ -87,7 +82,7 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
             left: 0;
             width: 90%;
             top: 100%;
-            opacity: 0.8;
+            opacity: 1;
             position: absolute;
             margin: 0;
 
@@ -103,7 +98,7 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
             border-radius: 8px;
             font-size: 1vw;
             font-weight: bold;
-            opacity: 0.9;
+            opacity: 1;
         }
 
         .upload-btn-wrapper input[type=file] {
@@ -127,9 +122,9 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
     </div>
 </header>
 
-<?php 
-    include '../components/navigation.php';
-?> 
+<?php
+include '../components/navigation.php';
+?>
 
 <section>
     <div class="container">
@@ -137,7 +132,7 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
             <div class="col-md-8">
                 <div class="profile">
 
-                    <h1 class="page-header"> <?php echo $userdata['first_name'] . " " . $userdata['last_name'] ?></h1>
+                    <h1 class="page-header"> <?php echo $userdata['FIRST_NAME'] . " " . $userdata['LAST_NAME'] ?></h1>
                     <div class="row" style="border-bottom: 1px solid #eee;
 }">
                         <div class="col-md-4">
@@ -152,44 +147,35 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
                             ?>">
                                 <button class="btn <?php
                                 if ($is_acceptable)
-                                    echo 'btn-warning' ;
+                                    echo 'btn-warning';
                                 else
-                                    echo 'btn-success'?>
+                                    echo 'btn-success' ?>
                                      btn-sm
                                      <?php
-                                if ($is_friend||$is_request&&!$is_acceptable)
+                                if ($is_friend || $is_request && !$is_acceptable)
                                     echo 'disabled'
                                 ?>" onclick="<?php
                                 if ($is_acceptable)
-                                    echo 'addFriend('.$userdata['ID'].')';
+                                    echo 'addFriend(' . $userdata['ID'] . ')';
                                 else
-                                    echo 'sendRequest('.$userdata['ID'].')'
+                                    echo 'sendRequest(' . $userdata['ID'] . ')'
                                 ?>" style="width: 49%"><?php
-                                    if($is_acceptable)
-                                        echo 'Add to friend' ;
+                                    if ($is_acceptable)
+                                        echo 'Add to friend';
                                     else if ($is_friend)
                                         echo 'You are friends!';
                                     else if ($is_request)
-                                        echo 'Request sent' ;
-                                    else echo 'Send request'?></button>
-                                <button class="btn btn-danger btn-sm " style="<?php if (!$is_friend||!$is_request) echo 'display: none;' ?>width: 49%" onclick="deleteFriend(<?php echo $userdata['ID']?>)">Delete friend</button>
+                                        echo 'Request sent';
+                                    else echo 'Send request' ?></button>
+                                <button class="btn btn-danger btn-sm "
+                                        style="<?php if (!$is_friend || !$is_request) echo 'display: none;' ?>width: 49%"
+                                        onclick="deleteFriend(<?php echo $userdata['ID'] ?>)">Delete friend
+                                </button>
 
                             </div>
 
                         </div>
-                        <div class="col-md-8" >
 
-                            echo "src=" . $userdata['image_path'];
-                            ?> style="border-radius: 50%;" class="img-thumbnail" alt="" >
-                            <br>
-                            <br>
-                            <form>
-                                <button style="width: 100%; background-image: linear-gradient(#04519b, #044687 60%, #033769);" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                        Profile Photo
-                    </button>
-                            </form>
-
-                        </div>
                         <div class="col-md-8">
 
                             <ul>
@@ -202,7 +188,11 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
                                 <li><strong>City:</strong> <?php echo $userdata['CITY'] ?></li>
 
                             </ul>
-
+                            <form method='post' action='../actions/loadFile.php' enctype="multipart/form-data">
+                                <div class="upload-btn-wrapper uploaded">
+                                    <button class="btn btn-success " style="width: 100%">Upload a photo</button>
+                                    <input type="file" name='userfile' onchange="this.form.submit()"/></div>
+                            </form>
                         </div>
                     </div>
                     <br><br>
@@ -236,8 +226,7 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
                                         <a href='profile.php?id=" . $userdata['ID'] . "' class=\"post-avatar thumbnail\"><img 
                                             src= " . $userdata['IMAGE'] . " alt=\"\"><div class=\"text-center\">" . $userdata['FIRST_NAME'] . "</div></a></div>";
 
-                                    }
-                                    else if (!$profile)
+                                    } else if (!$profile)
                                         echo "<div class='text-center' style='margin-bottom: 1.5vw;font-weight: bold' >Nothing to show :(</div>";
                                     ?>
 
@@ -266,24 +255,25 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
             <div class="col-md-4">
 
                 <?php
-                    include "../components/friends.php";          
+                include "../components/friends.php";
                 ?>
 
 
                 <?php
                 if ($profile)
-                    include "../components/requests.php";          
+                    include "../components/requests.php";
                 ?>
 
                 <?php
-                    include "../components/photos.php";          
+                include "../components/photos.php";
                 ?>
-                <form>
-                <button style="width: 100%; background-image: linear-gradient(#04519b, #044687 60%, #033769);" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                        Add Photo
-                    </button>    
+                <form method='post' action='../actions/loadFile.php' enctype="multipart/form-data">
+                    <div class="upload-btn-wrapper uploaded">
+                        <button class="btn btn-success " style="width: 100%; margin-left: 2rem">Add photo</button>
+                        <input type="file" name='userfile' onchange="this.form.submit()"/></div>
+                        <input type="hidden"  name="add_photo">
                 </form>
-                
+
             </div>
         </div>
     </div>
@@ -310,17 +300,18 @@ oci_fetch_all($query,$posts,null,null,OCI_FETCHSTATEMENT_BY_ROW);
             console.log(res.data)
         })
     }
+
     function deleteFriend(id) {
         axios.post('../actions/actions.php', {
-            friend_id:id,
-            delete:true
+            friend_id: id,
+            delete: true
         }).then(res => {
             location.reload()
             console.log(res.data)
         })
     }
-    
-    
+
+
 </script>
 </body>
 </html>
