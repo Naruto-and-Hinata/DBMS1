@@ -1,5 +1,5 @@
 <?php
-$link = mysqli_connect("localhost", "root", "", "middb");
+include "../actions/db.php";
 
 $err = [];
 
@@ -11,7 +11,7 @@ if (isset($_POST['submit'])) {
     $date_birth = $_POST['birth'];
     $gender = $_POST['gender'];
     $confirm = $_POST['confirm'];
-
+    $email = $_POST['email'];
     // проверям логин
     if (!preg_match("/^[a-zA-Z]+$/", $first_name)) {
         array_push($err, 'First name must contain only latin letters and numbers!');
@@ -33,8 +33,9 @@ if (isset($_POST['submit'])) {
     }
 
     // проверяем, не сущестует ли пользователя с таким именем
-    $query = mysqli_query($link, "SELECT * FROM users WHERE phone_number='$phone'");
-    if (mysqli_num_rows($query) > 0) {
+    $query = oci_parse($link, "SELECT * FROM users WHERE phone_number='$phone'");
+    oci_execute($query);
+    if (oci_num_rows($query) > 0) {
         array_push($err, 'User with this phone number exist!');
     }
 
@@ -42,11 +43,13 @@ if (isset($_POST['submit'])) {
     if (count($err) == 0) {
 
 
-        $date = date('Y-m-d');
+        $date = date('d-m-Y h:i:s');
         // Убераем лишние пробелы и делаем двойное хеширование
         $password = md5(md5(trim($_POST['password'])));
 
-        mysqli_query($link, "INSERT INTO users SET first_name='" . $first_name . "', password='" . $password . "',phone_number='$phone',date_registration='$date', date_birth='$date_birth',gender='$gender',last_name='$last_name' ");
+        echo $gender;
+        $query=oci_parse($link, "INSERT INTO users(id,first_name,password,phone_number,date_registration,date_birth,gender,last_name,email)  values(USER_ID.nextval,'" . $first_name . "','" . $password . "','$phone',to_date('$date','dd-mm-yy hh24:mi:ss'), to_date('$date_birth','YYYY-MM-DD'),'$gender','$last_name','$email') ");
+        oci_execute($query);
         header("Location: login.php");
 
     }
@@ -103,6 +106,10 @@ if (isset($_POST['submit'])) {
                             <div class="form-group">
                                 <label>Phone number</label>
                                 <input name="phone" type="text" required class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input name="email" type="email" required class="form-control">
                             </div>
                         </div> <!-- form-row.// -->
                         <div class="form-group">

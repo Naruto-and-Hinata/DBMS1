@@ -1,7 +1,7 @@
 <?php
 
 
-$link = mysqli_connect("localhost", "root", "", "middb");
+include "../actions/db.php";
 $friends = [];
 
 $requests = [];
@@ -14,23 +14,18 @@ if (isset($url['query'])) {
 
 }
 if (isset($params['id'])&& $params['id']!=$_COOKIE['id'] ) {
-    $user = mysqli_query($link, "select * from users where id='" . $params['id'] . "'");
+    $user = oci_parse($link, "select * from users where id='" . $params['id'] . "'");
 
 } else {
-    $user = mysqli_query($link, "select * from users where hash='" . $_COOKIE['hash'] . "'");
+    $user = oci_parse($link, "select * from users where hash='" . $_COOKIE['hash'] . "'");
     $profile = 1;
 }
-$userdata = mysqli_fetch_assoc($user);
-$date = mysqli_query($link, "select to_char(date_birth,'DAY MONTH YYYY') from users where  hash='" . $_COOKIE['hash'] . "'");
 
-$query = mysqli_query($link, "select * from friends where user='" . $userdata['id'] . "' limit 15");
-while ($row = mysqli_fetch_assoc($query)) {
-    $images = mysqli_query($link, "select id,image_path,first_name from users where id='" . $row['friend'] . "'");
-    array_push($friends, mysqli_fetch_assoc($images));
-}
+oci_execute($user);
+$userdata = oci_fetch_assoc($user);
 
-$postsQuery = mysqli_query($link, "select * from profile_wall where user='" . $userdata['id'] . "' order by date");
-while ($row = mysqli_fetch_assoc($postsQuery)) {
+
+
     array_push($posts, $row);
 }
 
@@ -120,6 +115,7 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
         <div class="row" style="border-bottom: 1px solid #eee;">
             <div class="col-md-8">
                 <div class="profile">
+
                     <h1 class="page-header"> <?php echo $userdata['first_name'] . " " . $userdata['last_name'] ?></h1>
                     <div class="row" style="border-bottom: 1px solid #eee;
 }">
@@ -134,16 +130,17 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                         Profile Photo
                     </button>
                             </form>
+
                         </div>
                         <div class="col-md-8">
                             <ul>
                                 <li>
-                                    <strong>Name:</strong> <?php echo $userdata['first_name'] . " " . $userdata['last_name'] ?>
+                                    <strong>Name:</strong> <?php echo $userdata['FIRST_NAME'] . " " . $userdata['LAST_NAME'] ?>
                                 </li>
-                                <li><strong>Phone:</strong> <?php echo $userdata['phone_number'] ?></li>
-                                <li><strong>Gender:</strong> <?php echo $userdata['gender'] ?></li>
-                                <li><strong>DOB:</strong> <?php echo $userdata['date_birth'] ?></li>
-                                <li><strong>City:</strong> <?php echo $userdata['city'] ?></li>
+                                <li><strong>Phone:</strong> <?php echo $userdata['PHONE_NUMBER'] ?></li>
+                                <li><strong>Gender:</strong> <?php echo $userdata['GENDER'] ?></li>
+                                <li><strong>DOB:</strong> <?php echo $userdata['DATE_BIRTH'] ?></li>
+                                <li><strong>City:</strong> <?php echo $userdata['CITY'] ?></li>
 
                             </ul>
                         </div>
@@ -175,19 +172,21 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                                     <?php
                                     if (sizeof($posts) > 0) {
                                         echo "<div class=\"col-sm-2\">
-                                        <a href='profile.php?id=" . $userdata['id'] . "' class=\"post-avatar thumbnail\"><img style=\"border-radius:50%;\" 
-                                            src= " . $userdata['image_path'] . " alt=\"\"><div class=\"text-center\">" . $userdata['first_name'] . "</div></a></div>";
+
+                                        <a href='profile.php?id=" . $userdata['ID'] . "' class=\"post-avatar thumbnail\"><img 
+                                            src= " . $userdata['IMAGE'] . " alt=\"\"><div class=\"text-center\">" . $userdata['FIRST_NAME'] . "</div></a></div>";
+
                                     }
                                     ?>
 
                                     <div class="col-sm-10">
                                         <?php
                                         for ($i = 0; $i < sizeof($posts); $i++) {
-                                            echo "<div class=\"likes text-end\">" . $posts[$i]['date'] . "</div>";
+                                            echo "<div class=\"likes text-end\">" . $posts[$i]['CREATE_DATE'] . "</div>";
 
                                             echo "<div class=\"bubble w-100\">";
                                             echo "<div class=\"pointer w-100\">";
-                                            echo "<p>" . $posts[$i]['text'] . "</p>";
+                                            echo "<p>" . $posts[$i]['TEXT'] . "</p>";
                                             echo "</div>";
                                             echo "</div>";
                                             echo "<div class=\"clearfix\"></div>";
@@ -203,9 +202,11 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                 </div>
             </div>
             <div class="col-md-4">
+
                 <?php
                     include "../components/friends.php";          
                 ?>
+
 
                 <?php
                     include "../components/requests.php";          

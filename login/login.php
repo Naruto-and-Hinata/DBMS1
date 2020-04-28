@@ -1,6 +1,16 @@
 <?php
 // Страница авторизации
 // Функция для генерации случайной строки
+function mysql_escape_mimic($inp) {
+    if(is_array($inp))
+        return array_map(__METHOD__, $inp);
+
+    if(!empty($inp) && is_string($inp)) {
+        return str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $inp);
+    }
+
+    return $inp;
+}
 function generateCode($length = 6)
 {
     $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHI JKLMNOPRQSTUVWXYZ0123456789";
@@ -14,20 +24,22 @@ function generateCode($length = 6)
 
 $err=[];
 // Соединямся с БД
-$link = mysqli_connect("localhost", "root", "", "middb");
+include '../actions/db.php';
 
 if (isset($_POST['submit'])) {
-    $query = mysqli_query($link, "SELECT id, password FROM users WHERE phone_number='" . mysqli_real_escape_string($link, $_POST['phone']) . "' LIMIT 1");
-    $data = mysqli_fetch_assoc($query);
+    $query = oci_parse($link, "SELECT id, password FROM users WHERE phone_number='" . $_POST['phone'] . "' ");
+    oci_execute($query);
+    $data = oci_fetch_assoc($query);
+    print_r($data);
     $hash = md5(generateCode(10));
     // Сравниваем пароли
-    if ($data['password'] === md5(md5($_POST['password']))) {
+    if ($data['PASSWORD'] === md5(md5($_POST['password']))) {
         // Генерируем случайное число и шифруем его
         // Записываем в БД новый хеш авторизации и IP
-        mysqli_query($link, "UPDATE users SET hash='" . $hash . "' WHERE id='" . $data['id'] . "'");
-
+        $query=oci_parse($link, "UPDATE users SET hash='" . $hash . "' WHERE id='" . $data['ID'] . "'");
+        oci_execute($query);
         // Ставим куки
-        setcookie("id", $data['id'], time() + 3600 * 24 * 30 * 12, "/");
+        setcookie("id", $data['ID'], time() + 3600 * 24 * 30 * 12, "/");
         setcookie("hash", $hash, time() + 3600 * 24 * 30 * 12,'/');
         // Переадресовываем браузер на страницу проверки нашего скрипта
         header("Location: ../actions/check.php");
