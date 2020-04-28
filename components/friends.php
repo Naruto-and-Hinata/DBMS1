@@ -2,7 +2,7 @@
     <div class="panel-heading" style="border-radius:4px; ">
         <h3 class="panel-title">
             <?php
-                if (isset($profile)) {
+                if (isset($profile) || isset($members)) {
                     echo "My Friends";
                 } else {
                     echo $userdata['first_name'] . "'s friends";
@@ -25,7 +25,7 @@
             }
             for ($i = 0; $i < sizeof($friends); $i++) {
                 echo "<li>
-                <a href='profile.php?id=" . $friends[$i]['id'] . "' class=\"post-avatar thumbnail\"><img 
+                <a href='profile.php?id=" . $friends[$i]['id'] . "' class=\"post-avatar thumbnail\"><img style=\"border-radius:50%;\"
                 src= " . $friends[$i]['image_path'] . " alt=\"\"><div class=\"text-center\">" . $friends[$i]['first_name'] . "</div></a></li>";
             }
         ?>

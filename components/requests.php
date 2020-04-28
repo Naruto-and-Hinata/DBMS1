@@ -24,7 +24,7 @@ while ($row = mysqli_fetch_assoc($query)) {
             if (sizeof($requests_users)>0){
                 foreach ($requests_users as $user ){
                     echo "<div class=\"group-item\">
-                    <img src='".$user['image_path']."' alt=\"\">
+                    <img style=\"border-radius:50%;\" src='".$user['image_path']."' alt=\"\">
                     <h4><a href='profile.php?id=".$user['id']."' class=\"\">".$user['first_name']." ".$user['last_name']."</a></h4>
                     <form ><button onclick=\"addFriend(".$user['id'].")\" class='btn btn-success btn-sm'>Accept</button>
                     <button onclick=\"declineFriend(".$user['id'].")\" class='btn btn-danger btn-sm'>Decline</button></form>
