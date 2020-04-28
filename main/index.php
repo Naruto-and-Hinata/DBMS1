@@ -152,6 +152,7 @@ oci_fetch_all($query,$wall,null,null,OCI_FETCHSTATEMENT_BY_ROW)
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="../js/bootstrap.js"></script>
 <script src="../js/axios.js"></script>
+<script src="../functions/script.js"></script>
 
 <script>
     function addPost() {
@@ -173,7 +174,6 @@ oci_fetch_all($query,$wall,null,null,OCI_FETCHSTATEMENT_BY_ROW)
             type:'global'
         }).then(res => {
             location.reload()
-            console.log(res.data)
         })
     }
 </script>

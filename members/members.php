@@ -2,33 +2,42 @@
 $users = [];
 $friends_id=[];
 $friends=[];
-$link = mysqli_connect("localhost", "root", "", "middb");
+include "../actions/db.php";
+
 if(isset($_POST['submit'])){
-    $query = mysqli_query($link, "select * from users where first_name like '%".$_POST['search']."%' or last_name like '".$_POST['search']."' limit 15");
+    $query = oci_parse($link, "select * from users where first_name like '%".$_POST['search']."%' or last_name like '".$_POST['search']."' limit 15");
+    oci_execute($query);
 }
 else{
-    $query = mysqli_query($link, "select * from users limit 15");
+    $query = oci_parse($link, "select * from users ");
+    oci_execute($query);
+
 }
-while ($row = mysqli_fetch_assoc($query)) {
-    if ($row['id']!=$_COOKIE['id']){
+while ($row = oci_fetch_assoc($query)) {
+    if ($row['ID']!=$_COOKIE['id']){
         array_push($users, $row);
     }
 }
 
-$query=mysqli_query($link,"select * from friends where user='".$_COOKIE['id']."'");
-while ($row = mysqli_fetch_assoc($query)) {
-    array_push($friends_id, $row['friend']);
-    $images = mysqli_query($link, "select id,image_path,first_name from users where id='" . $row['friend'] . "'");
-    array_push($friends, mysqli_fetch_assoc($images));
+$query=oci_parse($link,"select * from friends where user_id='".$_COOKIE['id']."'");
+oci_execute($query);
+while ($row = oci_fetch_assoc($query)) {
+    array_push($friends_id, $row['FRIEND']);
+    $images = oci_parse($link, "select id,image,first_name from users where id='" . $row['FRIEND'] . "'");
+    oci_execute($images);
+    array_push($friends, oci_fetch_assoc($images));
 }
-$query=mysqli_query($link,"select * from requests where user='".$_COOKIE['id']."'");
-while ($row = mysqli_fetch_assoc($query)) {
-    array_push($friends_id, $row['user_to']);
+$query=oci_parse($link,"select * from requests where user='".$_COOKIE['id']."'");
+oci_execute($query);
+
+while ($row = oci_fetch_assoc($query)) {
+    array_push($friends_id, $row['USER_ID']);
 
 }
 
-$user = mysqli_query($link, "select * from users where hash='" . $_COOKIE['hash'] . "'");
-$userdata = mysqli_fetch_assoc($user);
+$user = oci_parse($link, "select * from users where hash='" . $_COOKIE['hash'] . "'");
+oci_execute($user);
+$userdata = oci_fetch_assoc($user);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -94,26 +103,28 @@ $userdata = mysqli_fetch_assoc($user);
                     <?php
                     if (sizeof($users) > 0) {
                         foreach ($users as $user) {
-                            if(in_array($user['id'],$friends_id)){
+                            if(in_array($user['ID'],$friends_id)){
                                 $class="btn btn-success btn-block disabled";
                             }
                             else
                                 $class="btn btn-success btn-block";
                             echo "<div class=\"row member-row\">
                         <div class=\"col-md-3\">
-                            <img style=\"border-radius:50%;\" src=".$user['image_path']." class=\"img-thumbnail\" alt=\"\">
+
+                            <img src=".$user['IMAGE']." class=\"img-thumbnail\" alt=\"\">
+
                             <div class=\"text-center\">
-                               ".$user['first_name']." ".$user['last_name']."
+                               ".$user['FIRST_NAME']." ".$user['LAST_NAME']."
                             </div>
                         </div>
                         <div class=\"col-md-3\">
-                        <form onsubmit='event.preventDefault()'><p><button onclick='addFriend(".$user['id'].")'  class='".$class."'><i class=\"fa fa-users\"></i> Add Friend</button>
+                        <form onsubmit='event.preventDefault()'><p><button onclick='sendRequest(".$user['ID'].")'  class='".$class."'><i class=\"fa fa-users\"></i> Add Friend</button>
                             </p></form>
 
                         </div>
 
                         <div class=\"col-md-3\">
-                            <p><a href='../profile/profile.php?id=".$user['id']."' class=\"btn btn-primary btn-block\"><i class=\"fa fa-edit\"></i> View Profile</a>
+                            <p><a href='../profile/profile.php?id=".$user['ID']."' class=\"btn btn-primary btn-block\"><i class=\"fa fa-edit\"></i> View Profile</a>
                             </p>
                         </div>
                     </div>";
@@ -147,6 +158,9 @@ $userdata = mysqli_fetch_assoc($user);
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="../js/bootstrap.js"></script>
 <script src="../js/axios.js"></script>
+
+<script src="../functions/script.js">
+
 <script>
     function addFriend(id) {
         axios.post('../actions/actions.php',{friend:id}).then(res=>{
@@ -164,6 +178,7 @@ $userdata = mysqli_fetch_assoc($user);
         }
         
     }
+
 </script>
 </body>
 </html>
