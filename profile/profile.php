@@ -131,7 +131,7 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                             <br>
                             <form>
                                 <button style="width: 100%; background-image: linear-gradient(#04519b, #044687 60%, #033769);" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-                        Add Photo
+                        Profile Photo
                     </button>
                             </form>
                         </div>
@@ -214,8 +214,12 @@ while ($row = mysqli_fetch_assoc($postsQuery)) {
                 <?php
                     include "../components/photos.php";          
                 ?>
+                <form>
+                <button style="width: 100%; background-image: linear-gradient(#04519b, #044687 60%, #033769);" class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                        Add Photo
+                    </button>    
+                </form>
                 
-
             </div>
         </div>
     </div>
